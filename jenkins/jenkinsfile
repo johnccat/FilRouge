@@ -15,29 +15,35 @@ pipeline {
                 sh "docker build worker -t \"poecgroup4/filrouge-worker:${env.BUILD_NUMBER}\""
                 sh "docker build result -t \"poecgroup4/filrouge-result:${env.BUILD_NUMBER}\""
                 sh "docker build vote -t \"poecgroup4/filrouge-vote:${env.BUILD_NUMBER}\""
+
+                //sh "docker build vote -t \"poecgroup4/filrouge-vote:${env.BUILD_NUMBER}\""
+                //sh "docker build vote -t \"poecgroup4/filrouge-vote:${env.BUILD_NUMBER}\""
+
                 // push images on registry
                 sh "docker push poecgroup4/filrouge-worker:${env.BUILD_NUMBER}"
                 sh "docker push poecgroup4/filrouge-result:${env.BUILD_NUMBER}"
                 sh "docker push poecgroup4/filrouge-vote:${env.BUILD_NUMBER}"
+
             }
         }
         stage('Test') {
             steps {
-                echo 'Testing....'
+                echo 'Testing...selenium'   
             }
         }
         stage('Deploying') {
             steps {
                 // Arreter vieux filRouge et lance une autre version
+                sh "ssh group4@filrougeprod 'echo ${env.DOCKERHUB_CREDENTIALS_PSW} | docker login -u ${env.DOCKERHUB_CREDENTIALS_USR} --password-stdin'"
                 sh 'ssh group4@filrougeprod "mkdir -p /app/FilRouge"'
-                sh 'scp ./docker-compose.images.yml group4@filrougeprod /app/FilRouge'
-                sh  """ssh group4@filrougeprod cd /app/FilRouge
-                       && ./docker-compose down
-                       && BUILD_NUMBER=${env.BUILD_NUMBER} ./docker-compose pull
-                       && BUILD_NUMBER=${env.BUILD_NUMBER} ./docker-compose up -d"""
+                sh 'scp ./docker-compose.images.yml group4@filrougeprod:/app/FilRouge/docker-compose.yml'
+                sh "ssh group4@filrougeprod cd /app/FilRouge && BUILD_NUMBER=${env.BUILD_NUMBER} docker compose down "
+                sh "ssh group4@filrougeprod cd /app/FilRouge && BUILD_NUMBER=${env.BUILD_NUMBER} docker compose pull "
+                sh "ssh group4@filrougeprod cd /app/FilRouge && BUILD_NUMBER=${env.BUILD_NUMBER} docker compose up -d"
             }
         }
     }
+    
         post {
         failure {
             // notify users when the Pipeline fails

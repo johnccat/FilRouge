@@ -3,10 +3,10 @@
 # version is now using "compose spec"
 # v2 and v3 are now combined!
 # docker-compose v1.27+ required
-
+# poecgroup4/filrouge-worker:${env.BUILD_NUMBER}
 services:
   vote:
-    image: dockersamples/examplevotingapp_vote
+    image: poecgroup4/filrouge-vote:${BUILD_NUMBER:-*}
     depends_on:
       redis:
         condition: service_healthy 
@@ -17,7 +17,7 @@ services:
       - back-tier
 
   result:
-    image: dockersamples/examplevotingapp_result
+    image: poecgroup4/filrouge-result:${BUILD_NUMBER:-*}
     depends_on:
       db:
         condition: service_healthy 
@@ -28,7 +28,7 @@ services:
       - back-tier
 
   worker:
-    image: dockersamples/examplevotingapp_worker
+    image: poecgroup4/filrouge-worker:${BUILD_NUMBER:-*}
     depends_on:
       redis:
         condition: service_healthy 
