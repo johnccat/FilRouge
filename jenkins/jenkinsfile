@@ -23,12 +23,18 @@ pipeline {
         }
         stage('Test') {
             steps {
-                echo 'Testing...'
+                echo 'Testing....'
             }
         }
         stage('Deploying') {
             steps {
-                sh 'ssh group4@filrougeprod touch /app/ProjectFilRouge/kk'
+                // Arreter vieux filRouge et lance une autre version
+                sh 'ssh group4@filrougeprod "mkdir -p /app/FilRouge"'
+                sh 'scp ./docker-compose.images.yml group4@filrougeprod /app/FilRouge'
+                sh  """ssh group4@filrougeprod cd /app/FilRouge
+                       && ./docker-compose down
+                       && BUILD_NUMBER=${env.BUILD_NUMBER} ./docker-compose pull
+                       && BUILD_NUMBER=${env.BUILD_NUMBER} ./docker-compose up -d"""
             }
         }
     }
