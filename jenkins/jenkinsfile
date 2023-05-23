@@ -1,10 +1,24 @@
 pipeline {
     agent any
+    environment {
+        DOCKERHUB_CREDENTIALS = credentials('81a7dab7-79e5-44f7-90f0-fdd5f698a8fd')
+    }
 
     stages {
         stage('Build') {
             steps {
-                echo 'Building..'
+                //Log into dockerhub
+                sh """echo ${env.DOCKERHUB_CREDENTIALS_PSW} |
+                   docker login -u ${env.DOCKERHUB_CREDENTIALS_USR} --password-stdin"""
+
+                // Build docker images
+                sh "docker build worker -t \"poecgroup4/filrouge-worker:${env.BUILD_NUMBER}\""
+                sh "docker build result -t \"poecgroup4/filrouge-result:${env.BUILD_NUMBER}\""
+                sh "docker build vote -t \"poecgroup4/filrouge-vote:${env.BUILD_NUMBER}\""
+                // push images on registry
+                sh "docker push poecgroup4/filrouge-worker:${env.BUILD_NUMBER}"
+                sh "docker push poecgroup4/filrouge-result:${env.BUILD_NUMBER}"
+                sh "docker push poecgroup4/filrouge-vote:${env.BUILD_NUMBER}"
             }
         }
         stage('Test') {
@@ -12,10 +26,32 @@ pipeline {
                 echo 'Testing..'
             }
         }
-        stage('Deploy') {
-            steps {
-                echo 'Deploying....'
-            }
+    }
+}
+node {
+    def remote = [:]
+    remote.name = 'FilRougeProd'
+    remote.host = 'FilRougeProd'
+    remote.user = 'group4'
+    remote.password = 'group4'
+    remote.allowAnyHosts = true
+                /* groovylint-disable-next-line NestedBlockDepth */
+    stage('Remote SSH') {
+        sshCommand remote: remote, command: 'pwd && mkdir -p ProjetFilRouge'
+    //sshCommand remote: remote, command: ""
+    }
+    post {
+        failure {
+            // notify users when the Pipeline fails
+            mail to: 'johnccat2005@yahoo.fr',
+                    subject: "KO - ${currentBuild.result} - ${currentBuild.fullDisplayName}",
+                    body: " Build ${env.BUILD_NUMBER} failed during ${env.STAGE_NAME}....\nCheck ${env.BUILD_URL}"
+        }
+        success {
+            // notify users when the Pipeline fails
+            mail to: 'johnccat2005@yahoo.fr',
+                    subject: "OK - ${currentBuild.result} - ${currentBuild.fullDisplayName}",
+                    body: "Duration=${currentBuild.duration} \nCheck ${env.BUILD_URL}"
         }
     }
 }

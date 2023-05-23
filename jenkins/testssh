@@ -1,0 +1,12 @@
+node {
+                    def remote = [:]
+                    remote.name = 'FilRougeProd'
+                    remote.host = 'FilRougeProd'
+                    remote.user = 'group4'
+                    remote.password = 'group4'
+                    remote.allowAnyHosts = true
+                    stage('Remote SSH') {
+                        sshCommand remote: remote, command: "pwd && mkdir -p ProjetFilRouge"
+                        //sshCommand remote: remote, command: "for i in {1..5}; do echo -n \"Loop \$i \"; date ; sleep 1; done"
+                    }
+}                    
