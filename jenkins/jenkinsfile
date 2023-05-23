@@ -23,24 +23,16 @@ pipeline {
         }
         stage('Test') {
             steps {
-                echo 'Testing..'
+                echo 'Testing...'
+            }
+        }
+        stage('Deploying') {
+            steps {
+                sh 'ssh filrougeprod touch /app/ProjectFilRouge/kk'
             }
         }
     }
-}
-node {
-    def remote = [:]
-    remote.name = 'FilRougeProd'
-    remote.host = 'FilRougeProd'
-    remote.user = 'group4'
-    remote.password = 'group4'
-    remote.allowAnyHosts = true
-                /* groovylint-disable-next-line NestedBlockDepth */
-    stage('Remote SSH') {
-        sshCommand remote: remote, command: 'pwd && mkdir -p ProjetFilRouge'
-    //sshCommand remote: remote, command: ""
-    }
-    post {
+        post {
         failure {
             // notify users when the Pipeline fails
             mail to: 'johnccat2005@yahoo.fr',
