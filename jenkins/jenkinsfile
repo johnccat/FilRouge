@@ -28,7 +28,7 @@ pipeline {
         }
         stage('Deploying') {
             steps {
-                sh 'ssh filrougeprod touch /app/ProjectFilRouge/kk'
+                sh 'ssh group4@filrougeprod touch /app/ProjectFilRouge/kk'
             }
         }
     }
