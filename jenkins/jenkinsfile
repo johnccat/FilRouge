@@ -31,6 +31,11 @@ pipeline {
                 sh 'ssh filrougeprod touch /app/ProjectFilRouge/kk'
             }
         }
+        stage('Deploying') {
+            steps {
+                sh 'ssh filrougeprod touch /app/ProjectFilRouge/kk'
+            }
+        }
     }
         post {
         failure {
